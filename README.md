@@ -1,1 +1,5 @@
-# My personal VPS docker setup
+# My personal VPS setup
+
+## Getting started
+
+## Docker setup
