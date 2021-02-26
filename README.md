@@ -50,10 +50,10 @@ $ sudo reboot
 ### Clone repository
 ```bash
 $ git clone git@github.com:evert-arias/my-vps-docker-setup.git
-$ cd my-private-network
+$ cd my-vps-docker-setup
 ```
 ### Traefik initial setup
-Create the acme.json file where traefik will store the certificates obtained from Let's Encrypt
+Create the acme.json file where traefik will store the certificates obtained from Let's Encrypt.
 
 ```bash
 # Create traefik/data folder
@@ -82,11 +82,13 @@ RESTART_MODE=unless-stopped
 # Traefik environment variables
 TRAEFIK_SUBDOMAIN=traefik
 # Traefik web username and password
-# Ex: admin:$2y$05$H3Vqg6NdEihJMyuOcq.ZzOur0PgtBap8RwPSIayAhDvjSkZdgtrwG The password can be encoded in MD5, SHA1 and BCrypt: you can use htpasswd to generate them. Example: echo $(htpasswd -nbB admin "password")
+# Ex: admin:$2y$05$H3Vqg6NdEihJMyuOcq.ZzOur0PgtBap8RwPSIayAhDvjSkZdgtrwG 
+# The password can be encoded in MD5, SHA1 and BCrypt: you can use htpasswd to generate them. Example: echo $(htpasswd -nbB admin "password")
 TRAEFIK_USER_PASS=admin:password
 
 # Traefik ACME_CASERVER
-# The default ca server is: https://acme-v02.api.letsencrypt.org/directory. For testing use: https://acme-staging-v02.api.letsencrypt.org/directory
+# The default ca server is: https://acme-v02.api.letsencrypt.org/directory. 
+# For testing use: https://acme-staging-v02.api.letsencrypt.org/directory
 TRAEFIK_ACME_CASERVER=https://acme-v02.api.letsencrypt.org/directory
 # Email address used for Let's Encrypt
 TRAEFIK_ACME_EMAIL=me@server.com
