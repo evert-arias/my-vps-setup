@@ -83,7 +83,8 @@ RESTART_MODE=unless-stopped
 TRAEFIK_SUBDOMAIN=traefik
 # Traefik web username and password
 # Ex: admin:$2y$05$H3Vqg6NdEihJMyuOcq.ZzOur0PgtBap8RwPSIayAhDvjSkZdgtrwG 
-# The password can be encoded in MD5, SHA1 and BCrypt: you can use htpasswd to generate them. Example: echo $(htpasswd -nbB admin "password")
+# The password can be encoded in MD5, SHA1 and BCrypt: you can use htpasswd to generate them.
+# Example: echo $(htpasswd -nbB admin "password")
 TRAEFIK_USER_PASS=admin:password
 
 # Traefik ACME_CASERVER
