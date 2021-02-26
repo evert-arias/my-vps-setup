@@ -1,0 +1,156 @@
+version: "3"
+
+services:
+ 
+  # Traefik
+  traefik:
+    image: traefik:v2.1.4
+    container_name: traefik
+    restart: ${RESTART_MODE}
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    env_file:
+      - .env
+    command:
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - "--providers.file.filename=config.yaml"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.lets-encr.acme.httpchallenge=true"
+      - "--certificatesresolvers.lets-encr.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.lets-encr.acme.caserver=$TRAEFIK_ACME_CASERVER"
+      - "--certificatesresolvers.lets-encr.acme.email=$TRAEFIK_ACME_EMAIL"
+      - "--certificatesresolvers.lets-encr.acme.storage=/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/data/acme.json:/acme.json
+      - ./traefik/config.yaml:/config.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:[a-z-.]+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_SUBDOMAIN}.${SERVER_DOMAIN}`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=lets-encr"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USER_PASS}"
+  
+  # Portainer
+  portainer:
+    image: portainer/portainer:latest
+    container_name: portainer
+    restart: ${RESTART_MODE}
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./portainer/data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`${PORTAINER_SUBDOMAIN}.${SERVER_DOMAIN}`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.portainer.tls.certresolver=lets-encr"
+      - "traefik.http.routers.portainer.service=portainer"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.docker.network=proxy"
+
+  # NodeRed
+  nodered:
+    image: nodered/node-red:latest
+    container_name: nodered
+    restart: ${RESTART_MODE}
+    security_opt:
+      - no-new-privileges:true
+    user: root
+    environment:
+      - TZ= America/New_York
+    networks:
+      - proxy
+    volumes:
+      - ./nodered/data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nodered.rule=Host(`${NODERED_SUBDOMAIN}.${SERVER_DOMAIN}`)"
+      - "traefik.http.routers.nodered.entrypoints=websecure"
+      - "traefik.http.routers.nodered.tls=true"
+      - "traefik.http.routers.nodered.tls.certresolver=lets-encr"
+      - "traefik.http.routers.nodered.service=nodered"
+      - "traefik.http.services.nodered.loadbalancer.server.port=1880"
+      - "traefik.docker.network=proxy"
+  
+  # Mosquitto
+  mosquitto:
+    image: eclipse-mosquitto:1.6.8
+    container_name: mosquitto
+    restart: ${RESTART_MODE}
+    build: ./mosquitto
+    environment:
+      - MOSQUITTO_USERNAME=${MOSQUITTO_USER}
+      - MOSQUITTO_PASSWORD=${MOSQUITTO_PASS}
+    volumes:
+      - "./mosquitto:/mosquitto"
+    networks:
+      - proxy
+    ports:
+      - "1883:1883"
+
+  # OpenVPN
+  openvpn:
+    cap_add:
+      - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn
+    restart: ${RESTART_MODE}
+    networks:
+      - proxy
+    ports:
+      - "1194:1194/udp"
+    volumes:
+      - ./openvpn/data/conf:/etc/openvpn
+   
+  # Verdaccio 
+  verdaccio:
+    image: verdaccio/verdaccio
+    container_name: "verdaccio"
+    networks:
+      - proxy
+    environment:
+      - VERDACCIO_PORT=4873
+    ports:
+      - "4873:4873"
+    volumes:
+      - "./verdaccio/storage:/verdaccio/storage"
+      - "./verdaccio/config:/verdaccio/conf"
+      - "./verdaccio/plugins:/verdaccio/plugins" 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.verdaccio.rule=Host(`${VERDACCIO_SUBDOMAIN}.${SERVER_DOMAIN}`)"
+      - "traefik.http.routers.verdaccio.entrypoints=websecure"
+      - "traefik.http.routers.verdaccio.tls=true"
+      - "traefik.http.routers.verdaccio.tls.certresolver=lets-encr"
+      - "traefik.http.routers.verdaccio.service=verdaccio"
+      - "traefik.http.services.verdaccio.loadbalancer.server.port=4873"
+      - "traefik.docker.network=proxy"             
+            
+networks:
+  proxy:
+    external: true

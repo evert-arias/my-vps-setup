@@ -1,0 +1,43 @@
+http:
+  # Add the router
+  routers:
+    store-watcher:
+      entryPoints:
+        - websecure
+      service: store-watcher-service
+      rule: "Host(`api.notify.earias.me`)"
+      tls:
+        certResolver: lets-encr
+    avisame-backend:
+      entryPoints:
+        - websecure
+      service: avisame-service
+      rule: "Host(`api.avisame.treve.app`)"
+      tls:
+        certResolver: lets-encr    
+    tgproxy:
+      entryPoints:
+        - websecure
+      service: tgproxy-service
+      rule: "Host(`tgproxy.earias.me`)"
+      tls:
+        certResolver: lets-encr    
+
+  # Add the service
+  services:
+    store-watcher-service:
+      loadBalancer:
+        servers:
+          - url: "http://172.18.0.9:3000"
+        loadbalancer.server.scheme: http
+        passHostHeader: false
+    avisame-service:
+      loadBalancer:
+        servers:
+          - url: "http://172.18.0.6:3000"
+        loadbalancer.server.scheme: http
+        passHostHeader: false    
+    tgproxy-service:
+      loadBalancer:
+        servers:
+        - address: "172.18.0.10:1888"    

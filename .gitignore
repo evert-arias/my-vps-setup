@@ -1,0 +1,7 @@
+.env
+nodered
+portainer
+traefik/data
+openvpn
+verdaccio/config/storage
+verdaccio/config/htpasswd
