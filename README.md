@@ -19,8 +19,10 @@ $ nvm install node
 ```bash
 $ sudo yum update -y
 $ sudo yum install docker
-# Start docker deamon.
+# Start the Docker service.
 $ sudo service docker start
+# Add the ec2-user to the docker group so you can execute Docker commands without using sudo.
+$ sudo usermod -a -G docker ec2-user
 # Make docker auto-start.
 $ sudo chkconfig docker on
 ```
@@ -69,6 +71,17 @@ Create verdaccio folder and chmod 777 permission
 ```bash
 $ mkdir ./verdaccio
 $ chmod 777 ./verdaccio
+```
+
+### OpenVPN initial setup
+Initialize the configuration files and certificates
+```bash
+$ docker-compose run --rm openvpn ovpn_genconfig -u udp://vpn.earias.me
+$ docker-compose run --rm openvpn ovpn_initpki
+```
+Fix ownership (depending on how to handle your backups, this may not be needed)
+```bash
+$ sudo chown -R $(whoami): ./openvpn-data
 ```
 
 ### Environment variables
