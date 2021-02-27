@@ -52,7 +52,7 @@ services:
   
   # Portainer
   portainer:
-    image: portainer/portainer:latest
+    image: portainer/portainer-ce:latest
     container_name: portainer
     restart: ${RESTART_MODE}
     security_opt:
@@ -99,7 +99,7 @@ services:
   
   # Mosquitto
   mosquitto:
-    image: eclipse-mosquitto:1.6.8
+    image: eclipse-mosquitto:latest
     container_name: mosquitto
     restart: ${RESTART_MODE}
     build: ./mosquitto
@@ -112,6 +112,7 @@ services:
       - proxy
     ports:
       - "1883:1883"
+      - "9001:9001"
 
   # OpenVPN
   openvpn:
