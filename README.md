@@ -1,8 +1,20 @@
 # My personal VPS setup
 
-## Required tools
+This repository aim to host my personal VPS configuration as well as docker setup.
+
+* [Traefik](https://traefik.io/) (Reverse proxy and load balancer)
+* [Portainer](https://www.portainer.io/) (Container management GUI for docker)
+* [OpenVPN](https://github.com/kylemanna/docker-openvpn) (Virtual Private Network)
+* [Mosquitto](https://mosquitto.org/) (MQTT broker)
+* [NodeRed](https://nodered.org/) (Programming tool for wiring together hardware devices)
+* [Verdaccio](https://verdaccio.org/) (Open source private npm proxy registry)
+
+
+
+## Pre-setup requirements
+
 Install the following tools when running in a fresh VPS instance.
-### NodeJS and NPM
+#### NodeJS and NPM
 Install node version manager (NVM) by typing the following at the command line.
 ```bash
 $ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
@@ -15,7 +27,7 @@ Use NVM to install the latest version of Node.js by typing the following at the 
 ```bash
 $ nvm install node
 ```
-### Docker
+#### Docker
 ```bash
 $ sudo yum update -y
 $ sudo yum install docker
@@ -26,7 +38,7 @@ $ sudo usermod -a -G docker ec2-user
 # Make docker auto-start.
 $ sudo chkconfig docker on
 ```
-### Docker-compose
+#### Docker-compose
 Copy the appropriate docker-compose binary from GitHub.
 ```bash
 $ sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
@@ -35,11 +47,13 @@ Fix permissions after download.
 ```bash
 $ sudo chmod +x /usr/local/bin/docker-compose
 ```
-### Git
-Becouse its always needed.
+#### Git
+Because its always needed.
 ```bash
 $ sudo yum install -y git
 ```
+
+-------------------------------------------
 
 Reboot to verify it all loads fine on its own.
 
@@ -47,14 +61,16 @@ Reboot to verify it all loads fine on its own.
 $ sudo reboot
 ```
 
+
+
 ## Docker setup
 
-### Clone repository
+#### Clone repository
 ```bash
 $ git clone git@github.com:evert-arias/my-vps-docker-setup.git
 $ cd my-vps-docker-setup
 ```
-### Traefik initial setup
+#### Traefik initial setup
 Create the acme.json file where traefik will store the certificates obtained from Let's Encrypt.
 
 ```bash
@@ -66,14 +82,14 @@ $ touch traefik/data/acme.json
 $ chmod 600 traefik/data/acme.json
 ```
 
-### Verdaccio initial setup
+#### Verdaccio initial setup
 Create verdaccio folder and chmod 777 permission
 ```bash
 $ mkdir ./verdaccio
 $ chmod 777 ./verdaccio
 ```
 
-### OpenVPN initial setup
+#### OpenVPN initial setup
 Initialize the configuration files and certificates
 ```bash
 $ docker-compose run --rm openvpn ovpn_genconfig -u udp://vpn.earias.me
@@ -84,7 +100,7 @@ Fix ownership (depending on how to handle your backups, this may not be needed)
 $ sudo chown -R $(whoami): ./openvpn-data
 ```
 
-### Environment variables
+#### Environment variables
 Create .env file on the repository's root directory. Add the following environment variables to the .env file.
 
 ```bash
@@ -122,13 +138,15 @@ MOSQUITTO_PASS=password
 VERDACCIO_SUBDOMAIN=npm
 ```
 
-### Execute
+#### Execute
 Finally execute the following docker-compose command to run.
 
 ```bash
 $ docker-compose up -d
 ```
 
+
+
 ## Copyright
 
-2021 © [Evert Arias](https://earias.me/)
+2021 © Evert Arias
